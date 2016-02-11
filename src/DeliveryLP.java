@@ -2,7 +2,10 @@ import scpsolver.problems.LPSolution;
 import scpsolver.problems.LPWizard;
 import scpsolver.problems.LPWizardConstraint;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 
@@ -48,10 +51,10 @@ public class DeliveryLP {
     }
 
     public int dist(Place a, Place b) {
-        return (int)Math.ceil(Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)));
+        return (int) Math.ceil(Math.sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y)));
     }
 
-    public class Drone implements Comparable<Drone>{
+    public class Drone implements Comparable<Drone> {
         int t;
         Place pos;
         int[] carry;
@@ -154,6 +157,8 @@ public class DeliveryLP {
                 for (int k = 0; k < p; k++) {
                     // from warehouse x to client j number of items of type k
                     String varName = "x_" + i + "," + j + "," + k;
+                    if (warehouses[i].cnt[k] * clients[i].cnt[k] == 0)
+                        continue;
                     double dist = dist(warehouses[i], clients[j]);
                     lpw.plus(varName, dist * w[k]);
                     String constrName = "gz_" + i + "," + j + "," + k;
@@ -162,13 +167,19 @@ public class DeliveryLP {
             }
         }
 
+        System.err.println("Wizard has built!");
+
         for (int i = 0; i < nw; i++) {
             for (int k = 0; k < p; k++) {
                 // Summary number of items of type k delivered from warehouse i should be less than
                 // warehouse[i].cnt[k]
+                if (warehouses[i].cnt[k] == 0)
+                    continue;
                 String constrName = "b" + i + "," + k;
                 LPWizardConstraint constraint = lpw.addConstraint(constrName, warehouses[i].cnt[k], ">=");
                 for (int j = 0; j < nc; j++) {
+                    if (clients[j].cnt[k] == 0)
+                        continue;
                     String varname = "x_" + i + "," + j + "," + k;
                     constraint.plus(varname);
                 }
@@ -181,8 +192,12 @@ public class DeliveryLP {
                 // Summary number of items of type k delivered to client j should be at least than
                 // client[j].cnt[k]
                 String constrName = "c" + j + "," + k;
+                if (clients[j].cnt[k] == 0)
+                    continue;
                 LPWizardConstraint constraint = lpw.addConstraint(constrName, clients[j].cnt[k], "<=");
                 for (int i = 0; i < nw; i++) {
+                    if (warehouses[i].cnt[k] == 0)
+                        continue;
                     String varname = "x_" + i + "," + j + "," + k;
                     constraint.plus(varname);
                 }
@@ -201,6 +216,8 @@ public class DeliveryLP {
                 for (int k = 0; k < p; k++) {
                     // from warehouse x to client j number of items of type k
                     String varName = "x_" + i + "," + j + "," + k;
+                    if (warehouses[i].cnt[k] * clients[i].cnt[k] == 0)
+                        continue;
                     long cnt = solution.getInteger(varName);
                     if (cnt > 0) {
                         tasks.add(new Edge(i, j, k, cnt));
