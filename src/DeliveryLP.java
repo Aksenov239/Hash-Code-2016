@@ -157,7 +157,7 @@ public class DeliveryLP {
                 for (int k = 0; k < p; k++) {
                     // from warehouse x to client j number of items of type k
                     String varName = "x_" + i + "," + j + "," + k;
-                    if (warehouses[i].cnt[k] * clients[i].cnt[k] == 0)
+                    if (warehouses[i].cnt[k] * clients[j].cnt[k] == 0)
                         continue;
                     double dist = dist(warehouses[i], clients[j]);
                     lpw.plus(varName, dist * w[k]);
@@ -216,7 +216,7 @@ public class DeliveryLP {
                 for (int k = 0; k < p; k++) {
                     // from warehouse x to client j number of items of type k
                     String varName = "x_" + i + "," + j + "," + k;
-                    if (warehouses[i].cnt[k] * clients[i].cnt[k] == 0)
+                    if (warehouses[i].cnt[k] * clients[j].cnt[k] == 0)
                         continue;
                     long cnt = solution.getInteger(varName);
                     if (cnt > 0) {
